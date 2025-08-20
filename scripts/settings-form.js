@@ -109,20 +109,29 @@ export class SpellPointsForm extends HandlebarsApplicationMixin(ApplicationV2) {
     // Filter out spell levels not in CONFIG.DND5E.spellLevels
     const spellProgression = CONFIG.DND5E.spellProgression;
     if (data.spellProgression) {
-      data.spellProgression = SpellPointsForm.filterSpellLevelKeys(
+      const filtered = SpellPointsForm.filterSpellLevelKeys(
         data.spellProgression,
         spellProgression
       );
-      // Ensure each label is a string key for localization
-      for (const type in data.spellProgression) {
-        const entry = data.spellProgression[type];
-        if (typeof entry === "object") {
-          // If label is missing or not a string, fallback to type
-          if (typeof entry.label !== "string" || entry.label.trim() === "") {
-            entry.label = type;
-          }
+      // Force each entry to be {label: string, value: number}
+      for (const type in spellProgression) {
+        let entry = filtered[type];
+        if (typeof entry !== "object" || entry === null) {
+          entry = { value: Number(entry) || 0 };
         }
+        // Always set label as string
+        entry.label =
+          typeof entry.label === "string" && entry.label.trim() !== ""
+            ? entry.label
+            : type;
+        // Always set value as number
+        entry.value =
+          typeof entry.value === "number"
+            ? entry.value
+            : Number(entry.value) || 0;
+        filtered[type] = entry;
       }
+      data.spellProgression = filtered;
     }
 
     this.reset = false;
