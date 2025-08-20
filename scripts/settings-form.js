@@ -1,10 +1,9 @@
 import { SP_MODULE_NAME, SP_ITEM_ID } from "./main.js";
 import { SpellPoints } from "./spellpoints.js";
 
-
 /**
-* SPELL POINTS APPLICATION SETTINGS FORM V2
-*/
+ * SPELL POINTS APPLICATION SETTINGS FORM V2
+ */
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 export class SpellPointsForm extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = {
@@ -29,7 +28,7 @@ export class SpellPointsForm extends HandlebarsApplicationMixin(ApplicationV2) {
       icon: "fas fa-praying-hands",
       title: "dnd5e-spellpoints.form-title",
       resizable: true,
-    }
+    },
   };
 
   static PARTS = {
@@ -38,7 +37,7 @@ export class SpellPointsForm extends HandlebarsApplicationMixin(ApplicationV2) {
     },
     footer: {
       template: "templates/generic/form-footer.hbs",
-    }
+    },
   };
 
   static filterLevelKeys(obj, maxLevel) {
@@ -60,29 +59,70 @@ export class SpellPointsForm extends HandlebarsApplicationMixin(ApplicationV2) {
   _prepareContext() {
     let data = foundry.utils.mergeObject(
       {
-        spFormulas: Object.fromEntries(Object.keys(SpellPoints.formulas).map(formula_key => [formula_key, game.i18n.localize(`dnd5e-spellpoints.${formula_key}`)]))
+        spFormulas: Object.fromEntries(
+          Object.keys(SpellPoints.formulas).map((formula_key) => [
+            formula_key,
+            game.i18n.localize(`dnd5e-spellpoints.${formula_key}`),
+          ])
+        ),
       },
-      this.reset ? foundry.utils.mergeObject(SpellPoints.settings, SpellPoints.defaultSettings, { insertKeys: true, insertValues: true, overwrite: true, recursive: true, performDeletions: true }) : foundry.utils.mergeObject(SpellPoints.settings, { requireSave: false })
+      this.reset
+        ? foundry.utils.mergeObject(
+            SpellPoints.settings,
+            SpellPoints.defaultSettings,
+            {
+              insertKeys: true,
+              insertValues: true,
+              overwrite: true,
+              recursive: true,
+              performDeletions: true,
+            }
+          )
+        : foundry.utils.mergeObject(SpellPoints.settings, {
+            requireSave: false,
+          })
     );
 
     // Filter out levels above CONFIG.DND5E.maxLevel
     const maxLevel = CONFIG.DND5E.maxLevel;
     if (data.spellPointsByLevel) {
-      data.spellPointsByLevel = SpellPointsForm.filterLevelKeys(data.spellPointsByLevel, maxLevel);
+      data.spellPointsByLevel = SpellPointsForm.filterLevelKeys(
+        data.spellPointsByLevel,
+        maxLevel
+      );
     }
     if (data.leveledProgressionFormula) {
-      data.leveledProgressionFormula = SpellPointsForm.filterLevelKeys(data.leveledProgressionFormula, maxLevel);
+      data.leveledProgressionFormula = SpellPointsForm.filterLevelKeys(
+        data.leveledProgressionFormula,
+        maxLevel
+      );
     }
     // Filter out spell levels not in CONFIG.DND5E.spellLevels
     const spellLevels = CONFIG.DND5E.spellLevels;
     if (data.spellPointsCosts) {
-      data.spellPointsCosts = SpellPointsForm.filterSpellLevelKeys(data.spellPointsCosts, spellLevels);
+      data.spellPointsCosts = SpellPointsForm.filterSpellLevelKeys(
+        data.spellPointsCosts,
+        spellLevels
+      );
     }
 
     // Filter out spell levels not in CONFIG.DND5E.spellLevels
     const spellProgression = CONFIG.DND5E.spellProgression;
     if (data.spellProgression) {
-      data.spellProgression = SpellPointsForm.filterSpellLevelKeys(data.spellProgression, spellProgression);
+      data.spellProgression = SpellPointsForm.filterSpellLevelKeys(
+        data.spellProgression,
+        spellProgression
+      );
+      // Ensure each label is a string key for localization
+      for (const type in data.spellProgression) {
+        const entry = data.spellProgression[type];
+        if (typeof entry === "object") {
+          // If label is missing or not a string, fallback to type
+          if (typeof entry.label !== "string" || entry.label.trim() === "") {
+            entry.label = type;
+          }
+        }
+      }
     }
 
     this.reset = false;
@@ -90,8 +130,13 @@ export class SpellPointsForm extends HandlebarsApplicationMixin(ApplicationV2) {
     SpellPoints.setSpColors();
     data.buttons = [
       { type: "submit", icon: "fa-solid fa-save", label: "SETTINGS.Save" },
-      { type: "reset", action: "reset", icon: "fa-solid fa-undo", label: "SETTINGS.Reset" },
-    ]
+      {
+        type: "reset",
+        action: "reset",
+        icon: "fa-solid fa-undo",
+        label: "SETTINGS.Reset",
+      },
+    ];
     return data;
   }
 
@@ -99,7 +144,9 @@ export class SpellPointsForm extends HandlebarsApplicationMixin(ApplicationV2) {
     // The form element is available as this.form
     // Restore scroll position if available
     if (this._pendingScrollTop !== undefined && this.form) {
-      const scrollable = this.form.querySelector('.dnd5e-spellpoints .scrollable');
+      const scrollable = this.form.querySelector(
+        ".dnd5e-spellpoints .scrollable"
+      );
       if (scrollable) scrollable.scrollTop = this._pendingScrollTop;
       this._pendingScrollTop = undefined;
     }
@@ -110,9 +157,8 @@ export class SpellPointsForm extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   static async #onSubmit(event, form, formData) {
-
     // Save scroll position
-    const scrollable = form.querySelector('.dnd5e-spellpoints .scrollable');
+    const scrollable = form.querySelector(".dnd5e-spellpoints .scrollable");
     const scrollTop = scrollable ? scrollable.scrollTop : 0;
 
     // Store scroll position for restoration
@@ -125,42 +171,66 @@ export class SpellPointsForm extends HandlebarsApplicationMixin(ApplicationV2) {
       formulaOverrides = SpellPoints.formulas[expandForm.spFormula];
     }
 
-    let settings = foundry.utils.mergeObject(SpellPoints.settings, expandForm, { insertKeys: true, insertValues: true });
-    settings = foundry.utils.mergeObject(settings, formulaOverrides, { insertKeys: true, insertValues: true });
+    let settings = foundry.utils.mergeObject(SpellPoints.settings, expandForm, {
+      insertKeys: true,
+      insertValues: true,
+    });
+    settings = foundry.utils.mergeObject(settings, formulaOverrides, {
+      insertKeys: true,
+      insertValues: true,
+    });
 
     // Filter out levels above CONFIG.DND5E.maxLevel
     const maxLevel = CONFIG.DND5E.maxLevel;
     if (settings.spellPointsByLevel) {
-      settings.spellPointsByLevel = SpellPointsForm.filterLevelKeys(settings.spellPointsByLevel, maxLevel);
+      settings.spellPointsByLevel = SpellPointsForm.filterLevelKeys(
+        settings.spellPointsByLevel,
+        maxLevel
+      );
     }
     if (settings.leveledProgressionFormula) {
-      settings.leveledProgressionFormula = SpellPointsForm.filterLevelKeys(settings.leveledProgressionFormula, maxLevel);
+      settings.leveledProgressionFormula = SpellPointsForm.filterLevelKeys(
+        settings.leveledProgressionFormula,
+        maxLevel
+      );
     }
     // Filter out spell levels not in CONFIG.DND5E.spellLevels
     const spellLevels = CONFIG.DND5E.spellLevels;
     if (settings.spellPointsCosts) {
-      settings.spellPointsCosts = SpellPointsForm.filterSpellLevelKeys(settings.spellPointsCosts, spellLevels);
+      settings.spellPointsCosts = SpellPointsForm.filterSpellLevelKeys(
+        settings.spellPointsCosts,
+        spellLevels
+      );
     }
 
-    await game.settings.set(SP_MODULE_NAME, 'settings', settings).then(() => {
+    await game.settings.set(SP_MODULE_NAME, "settings", settings).then(() => {
       this.render();
     });
 
     if (event.type === "submit") this.close();
-
   }
 
   static async onReset(event, form) {
     const confirm = await foundry.applications.api.DialogV2.confirm({
-      window: { title: game.i18n.format(SP_MODULE_NAME + ".settingResetConfirmTitle") },
+      window: {
+        title: game.i18n.format(SP_MODULE_NAME + ".settingResetConfirmTitle"),
+      },
       content: game.i18n.format(SP_MODULE_NAME + ".settingResetConfirmText"),
     });
     if (!confirm) return;
 
-    const defaultSettings = foundry.utils.mergeObject(SpellPoints.settings, SpellPoints.defaultSettings, { insertKeys: true, insertValues: true, overwrite: true, recursive: true, performDeletions: true });
-    game.settings.set(
-      SP_MODULE_NAME, 'settings', defaultSettings
-    ).then(() => {
+    const defaultSettings = foundry.utils.mergeObject(
+      SpellPoints.settings,
+      SpellPoints.defaultSettings,
+      {
+        insertKeys: true,
+        insertValues: true,
+        overwrite: true,
+        recursive: true,
+        performDeletions: true,
+      }
+    );
+    game.settings.set(SP_MODULE_NAME, "settings", defaultSettings).then(() => {
       ui.notifications.info(game.i18n.format(SP_MODULE_NAME + ".settingReset"));
       this.reset = true;
       this.render();
