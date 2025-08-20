@@ -7,7 +7,7 @@ on:
   release:
     types: [published]
 env:
-  MODULE_ID: dnd5e-spellpoints
+  MODULE_ID: dnd5e-spellpoints-custom
 jobs:
   build:
     runs-on: ubuntu-latest
