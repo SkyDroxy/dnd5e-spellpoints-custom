@@ -2,7 +2,7 @@
     "id": "dnd5e-spellpoints-custom",
     "title": "Advanced Magic - Spell Points System 5e",
     "description": "FoundryVTT module for Spell Points System in D&amp;D5e. This module use the optional rules found on DMG to allow character to cast spells using a resource named 'Spell Points'",
-    "version": "1.0.0",
+    "version": "3.2.11",
     "compatibility": {
         "minimum": "13",
         "verified": "13"
@@ -22,7 +22,7 @@
     },
     "url": "https://github.com/SkyDroxy/dnd5e-spellpoints-custom",
     "manifest": "https://github.com/SkyDroxy/dnd5e-spellpoints-custom/releases/latest/download/module.json",
-    "download": "https://github.com/SkyDroxy/dnd5e-spellpoints-custom/releases/download/v1.0.0/dnd5e-spellpoints-custom.zip",
+    "download": "https://github.com/SkyDroxy/dnd5e-spellpoints-custom/releases/download/v3.2.11/dnd5e-spellpoints-custom.zip",
     "authors": [
         {
             "name": "SkyDroxy",
